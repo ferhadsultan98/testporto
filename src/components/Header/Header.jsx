@@ -8,25 +8,14 @@ const Header = () => {
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
-  const getScrollHeight = (section) => {
-    const isMobile = window.innerWidth <= 768;
-    switch (section) {
-      case "projects":
-        return isMobile ? 1300 : 900;
-      case "about":
-        return isMobile ? 2400 : 1700;
-      default:
-        return 0;
+  const scrollToSection = (sectionId) => {
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.scrollIntoView({
+        behavior: "smooth",
+      });
     }
-  };
-
-  const scrollToSection = (section) => {
-    const height = getScrollHeight(section);
-    window.scrollTo({
-      top: height,
-      behavior: "smooth",
-    });
-    setIsMenuOpen(false); // Close the menu after selection
+    setIsMenuOpen(false); // Menü kapanır
   };
 
   const handleScroll = () => {
@@ -62,13 +51,13 @@ const Header = () => {
         /></i>
         <ul className={`nav-links ${isMenuOpen ? "active" : ""}`}>
           <li>
-            <a onClick={() => scrollToSection("home")}>Home</a>
+            <a  href="#home" onClick={(e) => { e.preventDefault(); scrollToSection('home'); }}>Home</a>
           </li>
           <li>
-            <a onClick={() => scrollToSection("projects")}>Projects</a>
+            <a href="#projects" onClick={(e) => { e.preventDefault(); scrollToSection('projects'); }}>Projects</a>
           </li>
           <li>
-            <a onClick={() => scrollToSection("about")}>About</a>
+            <a href="#about" onClick={(e) => { e.preventDefault(); scrollToSection('about'); }}>About</a>
           </li>
         </ul>
       </div>

@@ -8,7 +8,8 @@ import {
 import { FaLinkedinIn } from "react-icons/fa";
 import { IoIosCall } from "react-icons/io";
 import { IoIosMail } from "react-icons/io";
-import axios from 'axios';  // Axios import edildi
+import { useForm, ValidationError } from '@formspree/react';
+import axios from 'axios';
 import ReCAPTCHA from "react-google-recaptcha";  // ReCAPTCHA import
 import './About.css';
 
@@ -22,11 +23,14 @@ const AboutSection = () => {
     city: '',
   });
   const [recaptchaValue, setRecaptchaValue] = useState(null);  // Store ReCAPTCHA value
-  const [isSubmitting, setIsSubmitting] = useState(false);  // Track if form is submitting
+
+  // Formspree integration
+  const [state, handleSubmit] = useForm("mnnqdvnp");  // Form ID from Formspree
 
   // Fetch location from IPStack API
   useEffect(() => {
-    const ipStackAPIKey = 'd296f3cfbc75050526368e3f85d480db';  // Your API key here
+    // Replace with your IPStack API key
+    const ipStackAPIKey = 'd296f3cfbc75050526368e3f85d480db';
 
     const fetchLocation = async () => {
       try {
@@ -48,60 +52,12 @@ const AboutSection = () => {
     fetchLocation();
   }, []);
 
-  // Modify handleSubmit to include location data and send to Flask
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!recaptchaValue) {
-      alert("Lütfen reCAPTCHA doğrulamasını tamamlayın.");
-      return;  // If ReCAPTCHA is not solved, do not submit
-    }
-
-    setIsSubmitting(true); // Mark the form as submitting
-
-    // Collect form data
-    const formData = new FormData(e.target);
-    const name = formData.get('name');
-    const email = formData.get('email');
-    const message = formData.get('message');
-    const ipAddress = locationData.ip;
-    const countryFlag = locationData.countryFlag;
-    const countryCode = locationData.countryCode;
-    const city = locationData.city;
-
-    // Create data object for backend
-    const data = {
-      name,
-      email,
-      message,
-      ip_address: ipAddress,
-      country_flag: countryFlag,
-      country_code: countryCode,
-      city: city,
-      'g-recaptcha-response': recaptchaValue,  // ReCAPTCHA response
-    };
-
-    // Send form data to Flask backend
-    try {
-      const response = await axios.post('http://localhost:5000/send-email', data, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.status === 200) {
-        setNotification('Mesajınız uğurla göndərildi!');
-        setNotificationClass('show');
-      } else {
-        setNotification('Mesaj göndermede bir hata oluştu.');
-        setNotificationClass('show');
-      }
-    } catch (error) {
-      console.error("Error sending email:", error);
-      setNotification('Mesaj göndermede bir hata oluştu.');
+  // Handle success notification when Formspree submission succeeds
+  useEffect(() => {
+    if (state.succeeded) {
+      setNotification('Mesajınız uğurla göndərildi!');
       setNotificationClass('show');
-    } finally {
-      setIsSubmitting(false); // Reset submitting state
+
       setTimeout(() => {
         setNotificationClass('hide');
         setTimeout(() => {
@@ -110,6 +66,26 @@ const AboutSection = () => {
         }, 500);
       }, 3000);
     }
+  }, [state.succeeded]);
+
+  // Modify handleSubmit to include location data
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!recaptchaValue) {
+      alert("Lütfen reCAPTCHA doğrulamasını tamamlayın.");
+      return;  // If ReCAPTCHA is not solved, do not submit
+    }
+
+    // Append location info to form data
+    const formData = new FormData(e.target);
+    formData.append('ip_address', locationData.ip);
+    formData.append('country_flag', locationData.countryFlag);
+    formData.append('country_code', locationData.countryCode);
+    formData.append('city', locationData.city);
+    formData.append('g-recaptcha-response', recaptchaValue);  // Include the ReCAPTCHA response
+
+    handleSubmit(formData);
   };
 
   const handleRecaptchaChange = (value) => {
@@ -117,7 +93,7 @@ const AboutSection = () => {
   };
 
   return (
-    <div className="AboutSectionContainer">
+    <div className="AboutSectionContainer" id="about" style={{paddingTop:  '80px'}}>
       <h1>About</h1>
       <hr className="about-separator" />
       <div className="about-container">
@@ -176,12 +152,24 @@ const AboutSection = () => {
                 size="normal"
               />
               
-              <button type="submit" id="message-send" disabled={isSubmitting}>
+              <button type="submit" id="message-send" disabled={state.submitting}>
                 Send
               </button>
               <div className={`notification ${notificationClass}`}>
                 {notification}
               </div>
+
+              {/* Formspree Validation Errors */}
+              <ValidationError
+                prefix="Email"
+                field="email"
+                errors={state.errors}
+              />
+              <ValidationError
+                prefix="Message"
+                field="message"
+                errors={state.errors}
+              />
             </form>
 
             <div className="contact-info-container">

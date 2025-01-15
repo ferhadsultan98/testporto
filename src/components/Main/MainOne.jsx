@@ -6,8 +6,7 @@ import Projects from "../Projects/Projects";
 import AboutSection from "../About/About";
 import { FaDownload } from "react-icons/fa";
 import BackVideo from "../../assets/BackVideo.mp4";
-import AOS from "aos";
-import "aos/dist/aos.css";
+import { MdPadding } from "react-icons/md";
 
 
 const MainOne = () => {
@@ -48,20 +47,16 @@ const MainOne = () => {
     }
   };
 
-  useEffect(() => {
-    AOS.init({
-      duration: 1000,
-      once: false,
-    });
-  }, []);
-
+ 
   return (
-    <div className="CommonMenu">
-      
+    <div className="CommonMenu" id="home" >
+      <div className="background-video">
+        <video autoPlay loop muted>
+          <source src={BackVideo} type="video/mp4" />
+        </video>
+      </div>
       <div
         className="MainOne"
-        data-aos="fade-down"
-        data-aos-anchor-placement="center-bottom"
       >
         <div className="left">
           <div className="hi">
