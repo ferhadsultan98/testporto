@@ -102,7 +102,9 @@ body {
 }
 
 .CommonMenu .frontend h1:first-child {
-  color: #00aaff;
+  color: transparent;
+  -webkit-text-stroke-width: 1px;
+  -webkit-text-stroke-color: #00aaff;
 }
 
 .CommonMenu .left .info {
